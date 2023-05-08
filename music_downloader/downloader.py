@@ -1,5 +1,6 @@
 import sys
 import re
+from youtube_dl import YoutubeDL
 from yt_dlp import YoutubeDL
 
 def progress_hook(status):
@@ -23,18 +24,20 @@ def is_valid_youtube_url(url):
     return bool(youtube_pattern.match(url.strip()))  
 
 
-def download_audio(url):
+
+def download_audio(url, audio_format, progress_callback=None):
     ydl_opts = {
         'format': 'bestaudio/best',
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
+            'preferredcodec': audio_format,
             'preferredquality': '192',
         }],
         'outtmpl': 'downloaded_music/%(title)s.%(ext)s',
         'noplaylist': False,
+        'progress_hooks': [progress_callback] if progress_callback else [],
     }
-
+    
     with YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=False)
 
@@ -45,4 +48,5 @@ def download_audio(url):
                 ydl.download([entry_url])
         else:
             ydl.download([url])
+
 
